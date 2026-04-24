@@ -1,6 +1,5 @@
 // MobileLoginScreenWithAPI.tsx
 import { objectImg } from '@/assets/images';
-import { colors } from '../../constants/colors';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { useState } from 'react';
@@ -17,6 +16,7 @@ import {
     useColorScheme,
     View
 } from 'react-native';
+import { colors } from '../../constants/colors';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 

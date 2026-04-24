@@ -1,5 +1,6 @@
 import { router } from "expo-router";
-import React from "react";
+import * as SecureStore from 'expo-secure-store';
+import { useEffect, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -8,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
 
 const levels = [
   { level: "N5", title: "Beginning for you" },
@@ -18,8 +20,51 @@ const levels = [
 ];
 
 export default function LevelScreen() {
+  const [image, setImage] = useState<string | null>(null);
+  const [name, setName] = useState('');
+  const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
+  const LOGIN_PATH = '/users/me';
+
+  const loadProfile = async () => {
+    console.log("🚀 loadProfile() called");
+    try {
+      const token = await SecureStore.getItemAsync('accessToken');
+      console.log("🔑 Token:", token);
+
+      const res = await fetch(`${API_URL}${LOGIN_PATH}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("STATUS:", res.status);
+      console.log("HEADERS:", res.headers);
+
+      const data = await res.json();
+
+      console.log("RAW RESPONSE DATA 👉", data);
+
+      setName(data.current_user?.username);
+      // setEmail(data.current_user?.email);
+      if (data.current_user?.profile_photo) {
+        setImage(`${API_URL}/${data.current_user.profile_photo}`);
+      } else {
+        setImage(null);
+      }
+      console.log("IMAGE URL USED:", `${API_URL}/${data.current_user?.profile_photo}`);
+
+    } catch (err) {
+      console.log("Profile load error:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
   return (
-        
+
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <View style={styles.header}>
@@ -29,11 +74,20 @@ export default function LevelScreen() {
             日本語能力試験 - JLPT Preparation
           </Text>
         </View>
-
-        <Image
-          source={{ uri: "https://i.pravatar.cc/100" }}
-          style={styles.avatar}
-        />
+        <TouchableOpacity onPress={() => router.push("/profile")}>
+          <Image
+            source={{
+              uri: image ?? 'https://i.pravatar.cc/150',
+            }}
+            style={styles.avatar}
+          />
+        </TouchableOpacity>
+        {name ? (
+          <View style={styles.userRow}>
+            <Text style={styles.wave}>👋</Text>
+            <Text style={styles.userName}>{name}</Text>
+          </View>
+        ) : null}
       </View>
 
       {/* Greeting */}
@@ -164,5 +218,19 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
     fontWeight: "600",
+  },
+  userRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  wave: {
+    fontSize: 14,
+    marginRight: 6,
+  },
+  userName: {
+    color: '#F5F3FF',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

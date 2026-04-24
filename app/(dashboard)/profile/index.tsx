@@ -2,7 +2,7 @@ import { colors } from '@/constants/colors';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Alert,
     Image,
@@ -45,7 +45,7 @@ export default function ProfileScreen() {
 
             console.log("RAW RESPONSE DATA 👉", data);
 
-            setName(data.current_user?.name);
+            setName(data.current_user?.username);
             setEmail(data.current_user?.email);
             if (data.current_user?.profile_photo) {
                 setImage(`${API_URL}/${data.current_user.profile_photo}`);
@@ -78,10 +78,11 @@ export default function ProfileScreen() {
 
     // 🔹 Save profile
     const handleSave = async () => {
+        console.log("Saving profile with name:", name, "and image:", image);
         const token = await SecureStore.getItemAsync('accessToken');
 
         const formData = new FormData();
-        formData.append('name', name);
+        formData.append('username', name);
 
         if (image) {
             formData.append('file', {
