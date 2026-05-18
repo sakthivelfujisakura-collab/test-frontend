@@ -1,3 +1,5 @@
+import { getTestResult } from "@/services/api";
+import { TestResult } from "@/types/test";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -11,8 +13,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { getTestResult } from "@/services/api";
-import { TestResult } from "@/types/test";
 
 export default function TestResultScreen() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function TestResultScreen() {
       const res = await getTestResult(Number(sessionId));
       setResult(res.data);
     } catch (e) {
-      console.error("❌ Failed to load test result", e);
+      // console.error("❌ Failed to load test result", e);
     } finally {
       setLoading(false);
     }

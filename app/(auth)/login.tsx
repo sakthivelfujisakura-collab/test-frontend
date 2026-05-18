@@ -66,7 +66,7 @@ export default function MobileLoginScreen({ navigation }: any) {
             }
 
             if (!res.ok) {
-                const msg = data?.message || data?.error || `Login failed (${res.status})`;
+                const msg = data?.message || data?.error || `Invalid email or password.`;
                 throw new Error(msg);
             }
 
@@ -84,7 +84,6 @@ export default function MobileLoginScreen({ navigation }: any) {
             // router.replace('/(dashboard)/home');
             router.replace('/level');
         } catch (err: any) {
-            console.error('Login error', err);
             setErrorMessage(err?.message || 'Login failed. Try again.');
         } finally {
             setLoading(false);

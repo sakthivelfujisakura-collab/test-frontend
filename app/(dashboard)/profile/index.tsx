@@ -14,147 +14,314 @@ import {
 } from 'react-native';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
-
 const LOGIN_PATH = '/users/me';
-console.log("API URL:", `${API_URL}${LOGIN_PATH}`);
 
 export default function ProfileScreen() {
+
     const router = useRouter();
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [image, setImage] = useState<string | null>(null);
 
+    // Validation Errors
+    const [nameError, setNameError] = useState('');
+    const [emailError, setEmailError] = useState('');
+
     // 🔹 Load profile data
     const loadProfile = async () => {
-        console.log("🚀 loadProfile() called");
+
         try {
-            const token = await SecureStore.getItemAsync('accessToken');
-            console.log("🔑 Token:", token);
 
-            const res = await fetch(`${API_URL}${LOGIN_PATH}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            const token =
+                await SecureStore.getItemAsync('accessToken');
 
-            console.log("STATUS:", res.status);
-            console.log("HEADERS:", res.headers);
+            const res = await fetch(
+                `${API_URL}${LOGIN_PATH}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
             const data = await res.json();
 
-            console.log("RAW RESPONSE DATA 👉", data);
+            console.log("PROFILE DATA 👉", data);
 
-            setName(data.current_user?.username);
-            setEmail(data.current_user?.email);
+            // Update name
+            setName(data.current_user?.username || '');
+
+            // Update email
+            setEmail(data.current_user?.email || '');
+
+            // Update image with cache busting
             if (data.current_user?.profile_photo) {
-                setImage(`${API_URL}/${data.current_user.profile_photo}`);
+
+                const imageUrl =
+                    `${API_URL}/${data.current_user.profile_photo}?t=${Date.now()}`;
+
+                setImage(imageUrl);
+
             } else {
+
                 setImage(null);
             }
-            console.log("IMAGE URL USED:", `${API_URL}/${data.current_user?.profile_photo}`);
 
         } catch (err) {
-            console.log("Profile load error:", err);
+
+            console.log('Profile load error:', err);
         }
     };
 
+    // 🔹 Initial load
     useEffect(() => {
         loadProfile();
     }, []);
 
     // 🔹 Image Picker
     const pickImage = async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            quality: 0.7,
-        });
+
+        const result =
+            await ImagePicker.launchImageLibraryAsync({
+                mediaTypes:
+                    ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                quality: 0.7,
+            });
 
         if (!result.canceled) {
+
             setImage(result.assets[0].uri);
         }
     };
 
     // 🔹 Save profile
     const handleSave = async () => {
-        console.log("Saving profile with name:", name, "and image:", image);
-        const token = await SecureStore.getItemAsync('accessToken');
 
-        const formData = new FormData();
-        formData.append('username', name);
+        let isValid = true;
 
-        if (image) {
-            formData.append('file', {
-                uri: image,
-                type: 'image/jpeg',
-                name: 'profile.jpg',
-            } as any);
+        // Reset Errors
+        setNameError('');
+        setEmailError('');
+
+        // Name Validation
+        if (!name.trim()) {
+
+            setNameError('Name is required');
+            isValid = false;
         }
 
-        await fetch(`${API_URL}/users/profile`, {
-            method: 'PUT',
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            body: formData,
-        });
+        // Email Validation
+        const emailRegex =
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        Alert.alert('Success', 'Profile updated successfully');
+        if (!email.trim()) {
+
+            setEmailError('Email is required');
+            isValid = false;
+
+        } else if (!emailRegex.test(email)) {
+
+            setEmailError('Enter valid email');
+            isValid = false;
+        }
+
+        // Stop API call if validation fails
+        if (!isValid) return;
+
+        try {
+
+            console.log(
+                "Saving profile with name:",
+                name,
+                "and image:",
+                image
+            );
+
+            const token =
+                await SecureStore.getItemAsync('accessToken');
+
+            const formData = new FormData();
+
+            formData.append('username', name);
+
+            // Upload image
+            if (
+                image &&
+                !image.includes('profile_photo')
+            ) {
+
+                formData.append('file', {
+                    uri: image,
+                    type: 'image/jpeg',
+                    name: 'profile.jpg',
+                } as any);
+            }
+
+            const response = await fetch(
+                `${API_URL}/users/profile`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,
+                }
+            );
+
+            const data = await response.json();
+
+            console.log("UPDATE RESPONSE 👉", data);
+
+            // Reload latest profile instantly
+            await loadProfile();
+
+            Alert.alert(
+                'Success',
+                'Profile updated successfully'
+            );
+
+        } catch (error) {
+
+            console.log(
+                'Save profile error:',
+                error
+            );
+
+            Alert.alert(
+                'Error',
+                'Failed to update profile'
+            );
+        }
     };
 
+    // 🔹 Logout
     const handleLogout = async () => {
-        await SecureStore.deleteItemAsync('accessToken');
+
+        await SecureStore.deleteItemAsync(
+            'accessToken'
+        );
+
         router.replace('/login');
     };
 
     return (
+
         <View style={styles.container}>
+
             {/* Profile Image */}
-            <TouchableOpacity onPress={pickImage}>
+            <TouchableOpacity
+                onPress={pickImage}
+            >
+
                 <Image
                     source={{
-                        uri: image ?? 'https://i.pravatar.cc/150',
+                        uri:
+                            image ??
+                            'https://i.pravatar.cc/150',
                     }}
                     style={styles.avatar}
                 />
-                <Text style={styles.editText}>Change Photo</Text>
+
+                <Text style={styles.editText}>
+                    Change Photo
+                </Text>
+
             </TouchableOpacity>
 
             {/* Name */}
-            <Text style={styles.label}>Name</Text>
+            <Text style={styles.label}>
+                Name
+            </Text>
+
             <TextInput
-                style={styles.input}
+                style={[
+                    styles.input,
+                    nameError
+                        ? styles.errorInput
+                        : null,
+                ]}
                 value={name}
-                onChangeText={setName}
+                onChangeText={(text) => {
+
+                    setName(text);
+
+                    if (text.trim()) {
+                        setNameError('');
+                    }
+                }}
+                placeholder="Enter your name"
             />
+
+            {nameError ? (
+
+                <Text style={styles.errorText}>
+                    {nameError}
+                </Text>
+
+            ) : null}
 
             {/* Email */}
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>
+                Email
+            </Text>
+
             <TextInput
-                style={styles.input}
+                style={[
+                    styles.input,
+                    emailError
+                        ? styles.errorInput
+                        : null,
+                ]}
                 value={email}
                 editable={false}
+                placeholder="Enter your email"
             />
 
+            {emailError ? (
+
+                <Text style={styles.errorText}>
+                    {emailError}
+                </Text>
+
+            ) : null}
+
             {/* Save Button */}
-            <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-                <Text style={styles.saveText}>Save Changes</Text>
+            <TouchableOpacity
+                style={styles.saveBtn}
+                onPress={handleSave}
+            >
+
+                <Text style={styles.saveText}>
+                    Save Changes
+                </Text>
+
             </TouchableOpacity>
 
             {/* Logout */}
-            <TouchableOpacity onPress={handleLogout}>
-                <Text style={styles.logout}>Logout</Text>
+            <TouchableOpacity
+                onPress={handleLogout}
+            >
+
+                <Text style={styles.logout}>
+                    Logout
+                </Text>
+
             </TouchableOpacity>
+
         </View>
     );
 }
+
 const styles = StyleSheet.create({
+
     container: {
         flex: 1,
         padding: 24,
         backgroundColor: '#fff',
     },
+
     avatar: {
         width: 120,
         height: 120,
@@ -162,16 +329,19 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginBottom: 10,
     },
+
     editText: {
         textAlign: 'center',
         color: '#4F46E5',
         marginBottom: 20,
     },
+
     label: {
         fontSize: 14,
         fontWeight: '600',
         marginTop: 10,
     },
+
     input: {
         borderWidth: 1,
         borderColor: '#E5E7EB',
@@ -179,17 +349,30 @@ const styles = StyleSheet.create({
         padding: 12,
         marginTop: 6,
     },
+
+    errorInput: {
+        borderColor: 'red',
+    },
+
+    errorText: {
+        color: 'red',
+        marginTop: 4,
+        fontSize: 12,
+    },
+
     saveBtn: {
         backgroundColor: colors.btnprimary,
         padding: 14,
         borderRadius: 8,
         marginTop: 20,
     },
+
     saveText: {
         color: '#fff',
         textAlign: 'center',
         fontWeight: '600',
     },
+
     logout: {
         marginTop: 20,
         color: '#DC2626',
