@@ -82,7 +82,13 @@ export default function MobileLoginScreen({ navigation }: any) {
 
             // Navigate to tabs after successful login
             // router.replace('/(dashboard)/home');
-            router.replace('/level');
+            const userRole = data?.user?.role;
+
+            if (userRole === "admin") {
+            router.replace("/admin/dashboard");
+            } else {
+            router.replace("/level");
+            }
         } catch (err: any) {
             setErrorMessage(err?.message || 'Login failed. Try again.');
         } finally {

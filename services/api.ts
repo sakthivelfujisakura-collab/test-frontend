@@ -13,8 +13,15 @@ export const api = axios.create({
   baseURL: `${API_BASE}/api`,
 });
 
-export const createSession = (payload: any) =>
-  api.post('/sessions', payload);
+// ✅ UPDATED: create session with level + set
+export const createSession = (payload: {
+  question_set_id: number;
+  user_id: number;
+}) => api.post("/sessions", payload);
+
+// ✅ UPDATED: get config using level + set
+export const getSetConfig = (level: string, setNumber: number) =>
+  api.get(`/test/set-config?level=${level}&set_number=${setNumber}`);
 
 export const getSession = (sessionId: number) =>
   api.get(`/sessions/${sessionId}`);
@@ -28,6 +35,4 @@ export const submitSession = (sessionId: number) =>
 export const getTestResult = (sessionId: number) =>
   api.get<TestResult>(`/sessions/${sessionId}/result`);  
 
-export const getSetConfig = (setId: number) =>
-  api.get(`/sets/${setId}/config`);
 

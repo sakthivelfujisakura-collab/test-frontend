@@ -25,6 +25,7 @@ import {
   submitSession,
 } from '@/services/api';
 import { Stack } from 'expo-router';
+import { useInactivityTimer } from '@/hooks/useInactivityTimer';
 
 /* ========================= CONFIG ========================= */
 
@@ -130,6 +131,7 @@ export default function TestScreen() {
   const [submitting, setSubmitting] = useState(false);
   const submitLock = useRef(false);
   const hasSwitchedAppRef = useRef(false);
+  const inactivityWarnShownRef = useRef(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const effectiveStartRef = useRef<number>(0);   // wall-clock ms when test began
@@ -140,6 +142,35 @@ export default function TestScreen() {
   // Layout tracking for auto-scroll
   const groupLayoutsRef = useRef<Record<number, number>>({});
   const questionLayoutsRef = useRef<Record<number, { groupId: number, y: number }>>({});
+
+  /* ========================= INACTIVITY TIMER ========================= */
+
+  const { resetTimer: resetInactivityTimer } = useInactivityTimer({
+    warnAfterMs:       2 * 60 * 1000,  // warn after 2 minutes idle
+    autoSubmitAfterMs: 5 * 60 * 1000,  // auto-submit after 5 minutes idle
+    enabled: !submitting && !loading,
+    onWarn: () => {
+      inactivityWarnShownRef.current = true;
+      Alert.alert(
+        'Are you still there?',
+        'You have been inactive for 2 minutes. The test will be automatically submitted in 3 minutes if no action is taken.',
+        [
+          {
+            text: "I'm Here",
+            style: 'default',
+            onPress: () => {
+              inactivityWarnShownRef.current = false;
+              resetInactivityTimer();
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+    },
+    onAutoSubmit: () => {
+      handleSubmit(true);
+    },
+  });
 
   /* ========================= LOAD SESSION ========================= */
 
@@ -413,6 +444,7 @@ export default function TestScreen() {
 
   const togglePlayback = async () => {
     if (!sound) return;
+    resetInactivityTimer();
 
     if (isPlaying) {
       await sound.pauseAsync();
@@ -437,6 +469,7 @@ export default function TestScreen() {
   );
 
   const handleChoose = (questionId: number, optionIndex: number) => {
+    resetInactivityTimer();
     setAnswers(prev => {
       const current = prev[questionId];
 
@@ -567,6 +600,7 @@ export default function TestScreen() {
 
   return (
     <>
+      {/* Invisible touch catcher — resets inactivity timer on ANY tap */}
       <Stack.Screen
         options={{
           title: 'JLPT Test',
@@ -629,7 +663,10 @@ export default function TestScreen() {
           <Text style={{ fontSize: 16, fontWeight: '600' }}>Loading...</Text>
         </View>
       ) : (
-        <View style={styles.container}>
+        <View
+          style={styles.container}
+          onTouchStart={resetInactivityTimer}
+        >
           {/* TOP BAR 
       <View style={styles.topBar}>
         <Text style={styles.topText}>

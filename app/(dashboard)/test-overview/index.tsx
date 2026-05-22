@@ -9,8 +9,7 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
-import { createSession } from "@/services/api";
-import { getSetConfig } from "@/services/api";
+import { createSession, getSetConfig } from "@/services/api";
 
 export default function TestOverviewScreen() {
   const router = useRouter();
@@ -20,13 +19,39 @@ export default function TestOverviewScreen() {
   }>();
 
   const [loading, setLoading] = useState(false);
+  const [config, setConfig] = useState<any>(null);
+  const [loadingConfig, setLoadingConfig] = useState(true);
 
+  // ✅ LOAD CONFIG (FIXED WITH LEVEL)
+  useEffect(() => {
+    loadConfig();
+  }, []);
+
+  const loadConfig = async () => {
+    try {
+      const res = await getSetConfig(level, Number(setNumber)); // ✅ FIXED
+      setConfig(res.data);
+    } catch (err: any) {
+      console.error("Failed to load config", err);
+
+      // ✅ Handle no data case (important UX fix)
+      Alert.alert(
+        "No Test Available",
+        "This level does not have this test yet."
+      );
+      router.back();
+    } finally {
+      setLoadingConfig(false);
+    }
+  };
+
+  // ✅ START TEST (FIXED PAYLOAD)
   const handleStart = async () => {
     setLoading(true);
     try {
       const payload = {
-        question_set_id: Number(setNumber),
-        user_id: 1, // static for now
+          question_set_id: Number(setNumber), // ✅ IMPORTANT FIX
+          user_id: 1,
       };
 
       const res = await createSession(payload);
@@ -36,33 +61,18 @@ export default function TestOverviewScreen() {
         pathname: "/test",
         params: { sessionId },
       });
-    } catch (err) {
-      console.error(err);
-      Alert.alert("Error", "Failed to start test session");
-    } finally {
+    } catch (err: any) {
+        console.log("ERROR RESPONSE:", err?.response?.data || err);
+        Alert.alert("Error", "Failed to start test session");
+      }finally {
       setLoading(false);
     }
   };
 
-  const [config, setConfig] = useState<any>(null);
-  const [loadingConfig, setLoadingConfig] = useState(true);
-
-  useEffect(() => {
-    loadConfig();
-  }, []);
-  const loadConfig = async () => {
-    try {
-      const res = await getSetConfig(Number(setNumber));
-      setConfig(res.data);
-    } catch (err) {
-      console.error("Failed to load config", err);
-    } finally {
-      setLoadingConfig(false);
-    }
-  };
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
+
       {loadingConfig || !config ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" />
@@ -90,12 +100,16 @@ export default function TestOverviewScreen() {
             <View style={styles.infoRow}>
               <View style={styles.infoCard}>
                 <Text style={styles.infoLabel}>Total Time</Text>
-                <Text style={styles.infoValue}>{config.total_time} min</Text>
+                <Text style={styles.infoValue}>
+                  {config.total_time || 0} min
+                </Text>
               </View>
 
               <View style={styles.infoCard}>
                 <Text style={styles.infoLabel}>Pass Percentage</Text>
-                <Text style={styles.infoValue}>{config.pass_percentage}%</Text>
+                <Text style={styles.infoValue}>
+                  {config.pass_percentage || 0}%
+                </Text>
               </View>
             </View>
 
@@ -103,23 +117,23 @@ export default function TestOverviewScreen() {
             <View style={styles.block}>
               <Text style={styles.blockTitle}>Section Breakdown</Text>
 
-              {config.sections.map((section: any) => (
-                <View key={section.id} style={styles.rowBetween}>
-                  <View>
+              {config.sections && config.sections.length > 0 ? (
+                config.sections.map((section: any) => (
+                  <View key={section.id} style={styles.rowBetween}>
+                    <Text style={styles.blockMain}>{section.title}</Text>
                     <Text style={styles.blockMain}>
-                      {section.title}
+                      {section.time_limit} min
                     </Text>
                   </View>
-                  <View style={styles.rightAlign}>
-                    <Text style={styles.blockMain}>
-                      {section.time_limit} minutes
-                    </Text>
-                  </View>
-                </View>
-              ))}
+                ))
+              ) : (
+                <Text style={styles.note}>
+                  No sections available for this test.
+                </Text>
+              )}
             </View>
 
-            {/* Important Notes */}
+            {/* Notes */}
             <View style={[styles.block, styles.noteBlock]}>
               <Text style={styles.blockTitle}>Important Notes</Text>
 
@@ -127,16 +141,16 @@ export default function TestOverviewScreen() {
                 • All sections share a common timer.
               </Text>
               <Text style={styles.note}>
-                • You can navigate back to previous sections if needed.
+                • You can navigate back to previous sections.
               </Text>
               <Text style={styles.note}>
                 • Maintain a stable internet connection.
               </Text>
               <Text style={styles.note}>
-                • Answers auto-save at time completion.
+                • Answers auto-save at completion.
               </Text>
               <Text style={styles.note}>
-                • All responses are auto-saved to prevent data loss.
+                • Responses are auto-saved.
               </Text>
             </View>
 
@@ -237,20 +251,11 @@ const styles = StyleSheet.create({
   rowBetween: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-  },
-  rightAlign: {
-    alignItems: "flex-end",
   },
   blockMain: {
     fontSize: 14,
     fontWeight: "600",
     color: "#111827",
-  },
-  blockSub: {
-    fontSize: 12,
-    color: "#6B7280",
-    marginTop: 2,
   },
 
   noteBlock: {

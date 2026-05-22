@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -8,64 +8,95 @@ import {
   View,
 } from "react-native";
 
+type QuestionSet = {
+  id: number;
+  name: string;
+};
+
 export default function QuestionSetsScreen() {
   const router = useRouter();
   const { level } = useLocalSearchParams<{ level: string }>();
 
-  const TOTAL_SETS = 10;
-  const sets = Array.from({ length: TOTAL_SETS }, (_, i) => ({
-  id: i + 1,
-  }));
+  const [sets, setSets] = useState<QuestionSet[]>([]);
 
+  // ✅ FETCH SETS FROM BACKEND
+  useEffect(() => {
+    const fetchSets = async () => {
+      try {
+        const res = await fetch(
+          `http://192.168.1.48:8000/api/test/sets?level=${level}`
+        );
+        const data = await res.json();
+
+        console.log("SETS:", data);
+        setSets(data);
+      } catch (err) {
+        console.log("Error fetching sets:", err);
+      }
+    };
+
+    if (level) fetchSets();
+  }, [level]);
 
   return (
     <>
-      {/* Disable native header */}
       <Stack.Screen options={{ headerShown: false }} />
-      {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.back}>← Back to Levels</Text>
-          </TouchableOpacity>
 
-          <Text style={styles.available}>Available Tests</Text>
-          <Text style={styles.levelText}>
-            Level {level} - Practice Tests
-          </Text>
-        </View>
+      {/* 🔵 HEADER */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text style={styles.back}>← Back to Levels</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.available}>Available Tests</Text>
+        <Text style={styles.levelText}>
+          Level {level} - Practice Tests
+        </Text>
+      </View>
+
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Content */}
         <View style={styles.content}>
           <Text style={styles.sectionTitle}>Test Your Skills</Text>
 
-        {sets.map((item) => (
-        <View key={item.id} style={styles.card}>
-          {/* Left */}
-          <View style={styles.left}>
-            <View style={styles.index}>
-              <Text style={styles.indexText}>{item.id}</Text>
+          {/* ❗ NO SETS CASE */}
+          {sets.length === 0 && (
+            <Text style={{ color: "gray" }}>
+              No tests available for this level
+            </Text>
+          )}
+
+          {/* ✅ SET LIST */}
+          {sets.map((item) => (
+            <View key={item.id} style={styles.card}>
+              <View style={styles.left}>
+                <View style={styles.index}>
+                  <Text style={styles.indexText}>{item.id}</Text>
+                </View>
+
+                <View>
+                  <Text style={styles.testTitle}>
+                    {item.name || `Test ${item.id}`}
+                  </Text>
+                </View>
+              </View>
+
+              {/* ✅ FIXED NAVIGATION */}
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() =>
+                  router.push({
+                    pathname: "/test-overview",
+                    params: {
+                      level: level,
+                      setNumber: item.id, // ✅ use setNumber (not setId)
+                    },
+                  })
+                }
+              >
+                <Text style={styles.buttonText}>Start</Text>
+              </TouchableOpacity>
             </View>
-
-            <View>
-              <Text style={styles.testTitle}>Test {item.id}</Text>
-            </View>
-          </View>
-
-          {/* CTA */}
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() =>
-              router.push({
-                pathname: "/test-overview",
-                params: { level, setNumber: item.id },
-              })
-            }
-          >
-            <Text style={styles.buttonText}>Start</Text>
-          </TouchableOpacity>
-        </View>
-      ))}
-
+          ))}
         </View>
       </ScrollView>
     </>
