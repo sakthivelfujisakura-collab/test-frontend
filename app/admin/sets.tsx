@@ -5,32 +5,63 @@ import {
   TouchableOpacity,
   FlatList,
 } from "react-native";
+
+import React, { useEffect, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter , useLocalSearchParams } from "expo-router";
 
 // const { level } = useLocalSearchParams();
-
 type Test = {
   id: number;
   title: string;
+  set_number: number;
 };
-
-const tests: Test[] = [
-  { id: 1, title: "Test 1" },
-  { id: 2, title: "Test 2" },
-  { id: 3, title: "Test 3" },
-  { id: 4, title: "Test 4" },
-  { id: 5, title: "Test 5" },
-  { id: 6, title: "Test 6" },
-  { id: 7, title: "Test 7" },
-  { id: 8, title: "Test 8" },
-  { id: 9, title: "Test 9" },
-  { id: 10, title: "Test 10" },
-];
 
 export default function SetsScreen() {
   const router = useRouter();
   const { level } = useLocalSearchParams();
+
+  const [tests, setTests] = useState<Test[]>([]);
+
+  const mergedSets = Array.from({ length: 10 }, (_, index) => {
+  const setNumber = index + 1;
+
+  const existing = tests.find(
+    (t) => t.set_number === setNumber
+  );
+
+  return (
+    existing || {
+      id: 0,
+      set_number: setNumber,
+      title: `Set ${setNumber}`,
+    }
+  );
+});
+
+console.log("MERGED SETS:", mergedSets);
+
+  useEffect(() => {
+  const fetchSets = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/test/sets?level=${level}`
+      );
+
+      const data = await res.json();
+
+      console.log("SETS:", data);
+
+      setTests(data);
+    } catch (err) {
+      console.log("Error fetching sets:", err);
+    }
+  };
+
+  if (level) {
+    fetchSets();
+  }
+}, [level]);
 
   console.log("LEVEL IN SETS:", level);
 
@@ -39,7 +70,7 @@ export default function SetsScreen() {
       
       {/* Number Box */}
       <View style={styles.numberBox}>
-        <Text style={styles.number}>{item.id}</Text>
+        <Text style={styles.number}>{item.set_number}</Text>
       </View>
 
       {/* Title */}
@@ -53,7 +84,7 @@ export default function SetsScreen() {
         router.push(`/admin/questions?testId=${item.id}&level=${level}`)
       }>
         <Text style={styles.buttonText}>
-          Manage Test {item.id}
+          Manage Test {item.set_number}
         </Text>
       </TouchableOpacity>
     </View>
@@ -76,11 +107,22 @@ export default function SetsScreen() {
 
       {/* 📋 LIST */}
       <FlatList
-        data={tests}
-        keyExtractor={(item) => item.id.toString()}
+        data={mergedSets}
+        keyExtractor={(item) => `set-${item.set_number}`}
         renderItem={renderItem}
         contentContainerStyle={{ padding: 16 }}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>
+              No sets available
+            </Text>
+
+            <Text style={styles.emptySubtitle}>
+              No test sets have been created for this level yet.
+            </Text>
+          </View>
+        }
       />
     </View>
   );
@@ -150,4 +192,26 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
   },
+
+  emptyContainer: {
+  backgroundColor: "#fff",
+  padding: 24,
+  borderRadius: 12,
+  alignItems: "center",
+  marginTop: 20,
+},
+
+emptyTitle: {
+  fontSize: 16,
+  fontWeight: "600",
+  color: "#333",
+},
+
+emptySubtitle: {
+  fontSize: 13,
+  color: "#777",
+  marginTop: 6,
+  textAlign: "center",
+},
+
 });

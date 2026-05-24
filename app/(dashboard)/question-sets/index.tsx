@@ -5,12 +5,13 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View, 
 } from "react-native";
 
 type QuestionSet = {
   id: number;
-  name: string;
+  title: string;
+  set_number: number;
 };
 
 export default function QuestionSetsScreen() {
@@ -70,12 +71,12 @@ export default function QuestionSetsScreen() {
             <View key={item.id} style={styles.card}>
               <View style={styles.left}>
                 <View style={styles.index}>
-                  <Text style={styles.indexText}>{item.id}</Text>
+                  <Text style={styles.indexText}>{item.set_number}</Text>
                 </View>
 
                 <View>
                   <Text style={styles.testTitle}>
-                    {item.name || `Test ${item.id}`}
+                    {item.title}
                   </Text>
                 </View>
               </View>
@@ -88,7 +89,7 @@ export default function QuestionSetsScreen() {
                     pathname: "/test-overview",
                     params: {
                       level: level,
-                      setNumber: item.id, // ✅ use setNumber (not setId)
+                      setNumber: item.set_number, // ✅ use setNumber (not setId)
                     },
                   })
                 }
