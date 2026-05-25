@@ -1,15 +1,15 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  FlatList,
-  ListRenderItem,
-} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  FlatList,
+  Image,
+  ListRenderItem,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type Level = {
   id: string;
@@ -26,6 +26,7 @@ const levels: Level[] = [
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const [image, setImage] = useState<string | null>(null);
 
   const renderItem: ListRenderItem<Level> = ({ item }) => (
     <View style={styles.card}>
@@ -61,12 +62,23 @@ export default function AdminDashboard() {
         <Text style={styles.appName}>Japanese Test App</Text>
         <Text style={styles.adminText}>Admin Panel</Text>
 
-        <Image
+                <TouchableOpacity
+                  onPress={() => router.push("/profile")}
+                >
+                  <Image
+                    source={{
+                      uri: image ?? 'https://i.pravatar.cc/150',
+                    }}
+                    style={styles.avatar}
+                  />
+                </TouchableOpacity>
+
+        {/* <Image
           source={{
             uri: "https://randomuser.me/api/portraits/women/44.jpg",
           }}
           style={styles.avatar}
-        />
+        /> */}
       </LinearGradient>
 
       {/* 👋 GREETING */}
@@ -112,12 +124,17 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   avatar: {
-    position: "absolute",
-    right: 16,
-    top: 50,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    // position: "absolute",
+    // right: 16,
+    // top: 50,
+    // width: 40,
+    // height: 40,
+    // borderRadius: 20,
+    width: 45,
+    height: 45,
+    borderRadius: 18,
+    left:"85%",
+    bottom:30
   },
   greeting: {
     padding: 16,
