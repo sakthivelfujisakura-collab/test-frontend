@@ -81,7 +81,14 @@ console.log("MERGED SETS:", mergedSets);
       {/* Button */}
       <TouchableOpacity style={styles.button}
       onPress={() =>
-        router.push(`/admin/questions?testId=${item.id}&level=${level}`)
+        router.push({
+          pathname: "/admin/questions",
+          params: {
+            testId: item.id,
+            setNumber: item.set_number,
+            level,
+          },
+        })
       }>
         <Text style={styles.buttonText}>
           Manage Test {item.set_number}
