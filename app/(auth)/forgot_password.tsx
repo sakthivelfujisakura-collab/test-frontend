@@ -121,130 +121,139 @@ export default function ForgotPasswordOneScreen() {
     /* ================= UI ================= */
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Password retrieval</Text>
-            <Text style={styles.subtitle}>
-                Did you forget your password? Don’t worry.
-            </Text>
+        <>
+            {/* header  */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()}>
+                    {/* <Text>Profile</Text> */}
+                    <Text style={styles.back}>← Back to Levels</Text>
+                </TouchableOpacity>
+            </View>
+            <View style={styles.container}>
+                <Text style={styles.title}>Password retrieval</Text>
+                <Text style={styles.subtitle}>
+                    Did you forget your password? Don’t worry.
+                </Text>
 
-            {/* STEP 1 – EMAIL */}
-            {step === 1 && (
-                <>
-                    <Text style={styles.label}>Email</Text>
-                    <TextInput
-                        placeholder="Enter registered email"
-                        style={styles.input}
-                        value={email}
-                        onChangeText={setEmail}
-                        autoCapitalize="none"
-                        keyboardType="email-address"
-                    />
+                {/* STEP 1 – EMAIL */}
+                {step === 1 && (
+                    <>
+                        <Text style={styles.label}>Email</Text>
+                        <TextInput
+                            placeholder="Enter registered email"
+                            style={styles.input}
+                            value={email}
+                            onChangeText={setEmail}
+                            autoCapitalize="none"
+                            keyboardType="email-address"
+                        />
 
-                    <TouchableOpacity
-                        style={[styles.button, loading && { opacity: 0.6 }]}
-                        onPress={sendOtp}
-                        disabled={loading}
-                    >
-                        <Text style={styles.buttonText}>
-                            {loading ? 'Please wait...' : 'Next'}
-                        </Text>
-                    </TouchableOpacity>
-                </>
-            )}
+                        <TouchableOpacity
+                            style={[styles.button, loading && { opacity: 0.6 }]}
+                            onPress={sendOtp}
+                            disabled={loading}
+                        >
+                            <Text style={styles.buttonText}>
+                                {loading ? 'Please wait...' : 'Next'}
+                            </Text>
+                        </TouchableOpacity>
+                    </>
+                )}
 
-            {/* STEP 2 – OTP */}
-            {step === 2 && (
-                <>
-                    <Text style={styles.label}>Enter OTP</Text>
+                {/* STEP 2 – OTP */}
+                {step === 2 && (
+                    <>
+                        <Text style={styles.label}>Enter OTP</Text>
 
-                    <View style={styles.otpRow}>
-                        {otp.map((value, i) => (
-                            <TextInput
-                                key={i}
-                                ref={(ref) => {
-                                    otpRefs.current[i] = ref;
-                                }}
-                                value={value}
-                                maxLength={1}
-                                keyboardType="number-pad"
-                                style={styles.otpBox}
+                        <View style={styles.otpRow}>
+                            {otp.map((value, i) => (
+                                <TextInput
+                                    key={i}
+                                    ref={(ref) => {
+                                        otpRefs.current[i] = ref;
+                                    }}
+                                    value={value}
+                                    maxLength={1}
+                                    keyboardType="number-pad"
+                                    style={styles.otpBox}
 
-                                onChangeText={(text) => {
-                                    const newOtp = [...otp];
-                                    newOtp[i] = text;
-                                    setOtp(newOtp);
-
-                                    // TYPE → NEXT
-                                    if (text && i < otp.length - 1) {
-                                        otpRefs.current[i + 1]?.focus();
-                                    }
-                                }}
-
-                                onKeyPress={({ nativeEvent }) => {
-                                    if (nativeEvent.key === 'Backspace') {
+                                    onChangeText={(text) => {
                                         const newOtp = [...otp];
-                                        newOtp[i] = '';
+                                        newOtp[i] = text;
                                         setOtp(newOtp);
 
-                                        // CLEAR → PREVIOUS
-                                        if (i > 0) {
-                                            setTimeout(() => {
-                                                otpRefs.current[i - 1]?.focus();
-                                            }, 10);
+                                        // TYPE → NEXT
+                                        if (text && i < otp.length - 1) {
+                                            otpRefs.current[i + 1]?.focus();
                                         }
-                                    }
-                                }}
-                            />
-                        ))}
-                    </View>
+                                    }}
+
+                                    onKeyPress={({ nativeEvent }) => {
+                                        if (nativeEvent.key === 'Backspace') {
+                                            const newOtp = [...otp];
+                                            newOtp[i] = '';
+                                            setOtp(newOtp);
+
+                                            // CLEAR → PREVIOUS
+                                            if (i > 0) {
+                                                setTimeout(() => {
+                                                    otpRefs.current[i - 1]?.focus();
+                                                }, 10);
+                                            }
+                                        }
+                                    }}
+                                />
+                            ))}
+                        </View>
 
 
 
-                    <TouchableOpacity
-                        style={[styles.button, loading && { opacity: 0.6 }]}
-                        onPress={verifyOtp}
-                        disabled={loading}
-                    >
-                        <Text style={styles.buttonText}>
-                            {loading ? 'Verifying...' : 'Verify OTP'}
-                        </Text>
-                    </TouchableOpacity>
-                </>
-            )}
+                        <TouchableOpacity
+                            style={[styles.button, loading && { opacity: 0.6 }]}
+                            onPress={verifyOtp}
+                            disabled={loading}
+                        >
+                            <Text style={styles.buttonText}>
+                                {loading ? 'Verifying...' : 'Verify OTP'}
+                            </Text>
+                        </TouchableOpacity>
+                    </>
+                )}
 
-            {/* STEP 3 – RESET PASSWORD */}
-            {step === 3 && (
-                <>
-                    <Text style={styles.label}>New Password</Text>
-                    <TextInput
-                        secureTextEntry
-                        placeholder="Enter new password"
-                        style={styles.input}
-                        value={password}
-                        onChangeText={setPassword}
-                    />
+                {/* STEP 3 – RESET PASSWORD */}
+                {step === 3 && (
+                    <>
+                        <Text style={styles.label}>New Password</Text>
+                        <TextInput
+                            secureTextEntry
+                            placeholder="Enter new password"
+                            style={styles.input}
+                            value={password}
+                            onChangeText={setPassword}
+                        />
 
-                    <Text style={styles.label}>Confirm Password</Text>
-                    <TextInput
-                        secureTextEntry
-                        placeholder="Confirm password"
-                        style={styles.input}
-                        value={confirm}
-                        onChangeText={setConfirm}
-                    />
+                        <Text style={styles.label}>Confirm Password</Text>
+                        <TextInput
+                            secureTextEntry
+                            placeholder="Confirm password"
+                            style={styles.input}
+                            value={confirm}
+                            onChangeText={setConfirm}
+                        />
 
-                    <TouchableOpacity
-                        style={[styles.button, loading && { opacity: 0.6 }]}
-                        onPress={resetPassword}
-                        disabled={loading}
-                    >
-                        <Text style={styles.buttonText}>
-                            {loading ? 'Updating...' : 'Change Password'}
-                        </Text>
-                    </TouchableOpacity>
-                </>
-            )}
-        </View>
+                        <TouchableOpacity
+                            style={[styles.button, loading && { opacity: 0.6 }]}
+                            onPress={resetPassword}
+                            disabled={loading}
+                        >
+                            <Text style={styles.buttonText}>
+                                {loading ? 'Updating...' : 'Change Password'}
+                            </Text>
+                        </TouchableOpacity>
+                    </>
+                )}
+            </View>
+        </>
     );
 }
 
@@ -310,5 +319,23 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 15,
         fontWeight: '600',
+    },
+          header: {
+        backgroundColor: "#6C7CFF",
+        padding: 20,
+        paddingTop: 48,
+        paddingBottom:10,
+        // borderBottomLeftRadius: 24,
+        // borderBottomRightRadius: 24,
+        elevation: 4,
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+    },
+    back: {
+        color: "#FFFFFF",
+        fontSize: 14,
+        fontWeight: "500",
+        marginBottom: 12,
     },
 });

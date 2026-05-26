@@ -7,6 +7,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
+    View,
 } from 'react-native';
 import { colors } from '../../constants/colors';
 
@@ -147,147 +148,154 @@ export default function SignupScreen() {
     };
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
-
-            <Text style={styles.title}>
-                Take your Japanese Test
-            </Text>
-
-            <Text style={styles.subtitle}>
-                Are you new? Then sign up to your account.
-            </Text>
-
-            {/* Name */}
-            <Text style={styles.label}>Name</Text>
-
-            <TextInput
-                style={[
-                    styles.input,
-                    nameError ? styles.errorInput : null,
-                ]}
-                placeholder="Enter your name"
-                value={name}
-                onChangeText={(text) => {
-                    setName(text);
-
-                    if (text.trim()) {
-                        setNameError('');
-                    }
-                }}
-            />
-
-            {nameError ? (
-                <Text style={styles.errorText}>
-                    {nameError}
+        <>
+            {/* header  */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()}>
+                    <Text style={styles.back}>← Back</Text>
+                </TouchableOpacity>
+            </View>
+            <ScrollView contentContainerStyle={styles.container}>
+                <Text style={styles.title}>
+                    Take your Japanese Test
                 </Text>
-            ) : null}
 
-            {/* Email */}
-            <Text style={styles.label}>Email</Text>
-
-            <TextInput
-                style={[
-                    styles.input,
-                    emailError ? styles.errorInput : null,
-                ]}
-                placeholder="Enter your email"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                value={email}
-                onChangeText={(text) => {
-                    setEmail(text);
-
-                    if (text.trim()) {
-                        setEmailError('');
-                    }
-                }}
-            />
-
-            {emailError ? (
-                <Text style={styles.errorText}>
-                    {emailError}
+                <Text style={styles.subtitle}>
+                    Are you new? Then sign up to your account.
                 </Text>
-            ) : null}
 
-            {/* Password */}
-            <Text style={styles.label}>Password</Text>
+                {/* Name */}
+                <Text style={styles.label}>Name</Text>
 
-            <TextInput
-                style={[
-                    styles.input,
-                    passwordError ? styles.errorInput : null,
-                ]}
-                placeholder="Enter password"
-                secureTextEntry
-                value={password}
-                onChangeText={(text) => {
-                    setPassword(text);
+                <TextInput
+                    style={[
+                        styles.input,
+                        nameError ? styles.errorInput : null,
+                    ]}
+                    placeholder="Enter your name"
+                    value={name}
+                    onChangeText={(text) => {
+                        setName(text);
 
-                    if (text.trim()) {
-                        setPasswordError('');
-                    }
-                }}
-            />
+                        if (text.trim()) {
+                            setNameError('');
+                        }
+                    }}
+                />
 
-            {passwordError ? (
-                <Text style={styles.errorText}>
-                    {passwordError}
-                </Text>
-            ) : null}
+                {nameError ? (
+                    <Text style={styles.errorText}>
+                        {nameError}
+                    </Text>
+                ) : null}
 
-            {/* Confirm Password */}
-            <Text style={styles.label}>Confirm Password</Text>
+                {/* Email */}
+                <Text style={styles.label}>Email</Text>
 
-            <TextInput
-                style={[
-                    styles.input,
-                    confirmPasswordError ? styles.errorInput : null,
-                ]}
-                placeholder="Confirm password"
-                secureTextEntry
-                value={confirmPassword}
-                onChangeText={(text) => {
-                    setConfirmPassword(text);
+                <TextInput
+                    style={[
+                        styles.input,
+                        emailError ? styles.errorInput : null,
+                    ]}
+                    placeholder="Enter your email"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    value={email}
+                    onChangeText={(text) => {
+                        setEmail(text);
 
-                    if (text.trim()) {
-                        setConfirmPasswordError('');
-                    }
-                }}
-            />
+                        if (text.trim()) {
+                            setEmailError('');
+                        }
+                    }}
+                />
 
-            {confirmPasswordError ? (
-                <Text style={styles.errorText}>
-                    {confirmPasswordError}
-                </Text>
-            ) : null}
+                {emailError ? (
+                    <Text style={styles.errorText}>
+                        {emailError}
+                    </Text>
+                ) : null}
 
-            {/* Signup Button */}
-            <TouchableOpacity
-                style={styles.button}
-                onPress={handleSignup}
-                disabled={loading}
-            >
-                <Text style={styles.buttonText}>
-                    {loading
-                        ? 'Creating Account...'
-                        : 'Sign Up'}
-                </Text>
-            </TouchableOpacity>
+                {/* Password */}
+                <Text style={styles.label}>Password</Text>
 
-            {/* Login */}
-            <Text style={styles.footerText}>
-                Do you have an account?
+                <TextInput
+                    style={[
+                        styles.input,
+                        passwordError ? styles.errorInput : null,
+                    ]}
+                    placeholder="Enter password"
+                    secureTextEntry
+                    value={password}
+                    onChangeText={(text) => {
+                        setPassword(text);
 
-                <Text
-                    style={styles.loginText}
-                    onPress={() => router.push('/login')}
+                        if (text.trim()) {
+                            setPasswordError('');
+                        }
+                    }}
+                />
+
+                {passwordError ? (
+                    <Text style={styles.errorText}>
+                        {passwordError}
+                    </Text>
+                ) : null}
+
+                {/* Confirm Password */}
+                <Text style={styles.label}>Confirm Password</Text>
+
+                <TextInput
+                    style={[
+                        styles.input,
+                        confirmPasswordError ? styles.errorInput : null,
+                    ]}
+                    placeholder="Confirm password"
+                    secureTextEntry
+                    value={confirmPassword}
+                    onChangeText={(text) => {
+                        setConfirmPassword(text);
+
+                        if (text.trim()) {
+                            setConfirmPasswordError('');
+                        }
+                    }}
+                />
+
+                {confirmPasswordError ? (
+                    <Text style={styles.errorText}>
+                        {confirmPasswordError}
+                    </Text>
+                ) : null}
+
+                {/* Signup Button */}
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={handleSignup}
+                    disabled={loading}
                 >
-                    {' '}Log In
-                </Text>
-            </Text>
+                    <Text style={styles.buttonText}>
+                        {loading
+                            ? 'Creating Account...'
+                            : 'Sign Up'}
+                    </Text>
+                </TouchableOpacity>
 
-        </ScrollView>
+                {/* Login */}
+                <Text style={styles.footerText}>
+                    Do you have an account?
+
+                    <Text
+                        style={styles.loginText}
+                        onPress={() => router.push('/login')}
+                    >
+                        {' '}Log In
+                    </Text>
+                </Text>
+
+            </ScrollView>
+        </>
     );
 }
 
@@ -297,7 +305,7 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         backgroundColor: '#FFFFFF',
         padding: 24,
-        justifyContent: 'center',
+        // justifyContent: 'center',
     },
 
     title: {
@@ -363,5 +371,23 @@ const styles = StyleSheet.create({
     loginText: {
         color: colors.text,
         fontWeight: '700',
+    },
+             header: {
+        backgroundColor: "#6C7CFF",
+        padding: 20,
+        paddingTop: 48,
+        paddingBottom:10,
+        // borderBottomLeftRadius: 24,
+        // borderBottomRightRadius: 24,
+        elevation: 4,
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+    },
+    back: {
+        color: "#FFFFFF",
+        fontSize: 14,
+        fontWeight: "500",
+        marginBottom: 12,
     },
 });

@@ -1,14 +1,14 @@
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-import React, { useEffect, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter , useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 
 // const { level } = useLocalSearchParams();
 type Test = {
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    paddingTop: 50,
+    paddingTop: 40,
     paddingHorizontal: 16,
     paddingBottom: 20,
     borderBottomLeftRadius: 20,
