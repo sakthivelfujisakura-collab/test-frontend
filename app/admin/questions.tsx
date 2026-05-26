@@ -10,7 +10,7 @@ import AudioPlayer from "../../components/audioplayer";
 
 export default function QuestionsScreen() {
   const router = useRouter();
-  const { testId, level } = useLocalSearchParams();
+  const { testId, level, setNumber } = useLocalSearchParams();
   const [selectedFile, setSelectedFile] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -116,16 +116,45 @@ export default function QuestionsScreen() {
 
       const formData = new FormData();
 
+      formData.append(
+        "level",
+        String(level)
+      );
+
+      formData.append(
+        "set_number",
+        String(setNumber)
+      );
+
       formData.append("file", {
         uri: selectedFile.uri,
         name: selectedFile.name,
-        type: selectedFile.mimeType,
+        type:
+          selectedFile.mimeType ||
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       } as any);
+
+      console.log("LEVEL SENT:", level);
+      console.log("SET NUMBER SENT:", setNumber);
+
+    // NEW
+    formData.append(
+      "level",
+      String(level)
+    );
+
+    formData.append(
+      "set_number",
+      String(setNumber)
+    );
 
       const token =
         await SecureStore.getItemAsync(
           "accessToken"
         );
+
+        console.log("LEVEL:", level);
+        console.log("TEST ID:", testId);
 
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/excel/upload`,
@@ -138,15 +167,16 @@ export default function QuestionsScreen() {
         }
       );
 
-      const data =
-        await response.json();
+      const data = await response.json();
+
+      console.log(
+        "UPLOAD RESPONSE:",
+        JSON.stringify(data, null, 2)
+      );
 
       if (!response.ok) {
-
-        throw new Error(
-          data.detail ||
-          "Upload failed"
-        );
+        alert(JSON.stringify(data, null, 2));
+        return;
       }
 
       alert(
@@ -154,6 +184,12 @@ export default function QuestionsScreen() {
       );
 
       setSelectedFile(null);
+
+      await fetchQuestions();
+
+      setActiveTab(
+        "manage"
+      );
 
     } catch (error: any) {
 
