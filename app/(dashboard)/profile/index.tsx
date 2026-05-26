@@ -208,109 +208,119 @@ export default function ProfileScreen() {
 
     return (
 
-        <View style={styles.container}>
+          <>
+           {/* header  */}
+             <View style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()}>
+                    {/* <Text>Profile</Text> */}
+                    <Text style={styles.back}>← Back</Text>
+                </TouchableOpacity>
+            </View>
+            <View style={styles.container}>
 
-            {/* Profile Image */}
-            <TouchableOpacity
-                onPress={pickImage}
-            >
+                {/* Profile Image */}
+                <TouchableOpacity
+                    onPress={pickImage}
+                    style={{ marginTop: 20 }}
+                >
 
-                <Image
-                    source={{
-                        uri:
-                            image ??
-                            'https://i.pravatar.cc/150',
+                    <Image
+                        source={{
+                            uri:
+                                image ??
+                                'https://i.pravatar.cc/150',
+                        }}
+                        style={styles.avatar}
+                    />
+
+                    <Text style={styles.editText}>
+                        Change Photo
+                    </Text>
+
+                </TouchableOpacity>
+
+                {/* Name */}
+                <Text style={styles.label}>
+                    Name
+                </Text>
+
+                <TextInput
+                    style={[
+                        styles.input,
+                        nameError
+                            ? styles.errorInput
+                            : null,
+                    ]}
+                    value={name}
+                    onChangeText={(text) => {
+
+                        setName(text);
+
+                        if (text.trim()) {
+                            setNameError('');
+                        }
                     }}
-                    style={styles.avatar}
+                    placeholder="Enter your name"
                 />
 
-                <Text style={styles.editText}>
-                    Change Photo
+                {nameError ? (
+
+                    <Text style={styles.errorText}>
+                        {nameError}
+                    </Text>
+
+                ) : null}
+
+                {/* Email */}
+                <Text style={styles.label}>
+                    Email
                 </Text>
 
-            </TouchableOpacity>
+                <TextInput
+                    style={[
+                        styles.input,
+                        emailError
+                            ? styles.errorInput
+                            : null,
+                    ]}
+                    value={email}
+                    editable={false}
+                    placeholder="Enter your email"
+                />
 
-            {/* Name */}
-            <Text style={styles.label}>
-                Name
-            </Text>
+                {emailError ? (
 
-            <TextInput
-                style={[
-                    styles.input,
-                    nameError
-                        ? styles.errorInput
-                        : null,
-                ]}
-                value={name}
-                onChangeText={(text) => {
+                    <Text style={styles.errorText}>
+                        {emailError}
+                    </Text>
 
-                    setName(text);
+                ) : null}
 
-                    if (text.trim()) {
-                        setNameError('');
-                    }
-                }}
-                placeholder="Enter your name"
-            />
+                {/* Save Button */}
+                <TouchableOpacity
+                    style={styles.saveBtn}
+                    onPress={handleSave}
+                >
 
-            {nameError ? (
+                    <Text style={styles.saveText}>
+                        Save Changes
+                    </Text>
 
-                <Text style={styles.errorText}>
-                    {nameError}
-                </Text>
+                </TouchableOpacity>
 
-            ) : null}
+                {/* Logout */}
+                <TouchableOpacity
+                    onPress={handleLogout}
+                >
 
-            {/* Email */}
-            <Text style={styles.label}>
-                Email
-            </Text>
+                    <Text style={styles.logout}>
+                        Logout
+                    </Text>
 
-            <TextInput
-                style={[
-                    styles.input,
-                    emailError
-                        ? styles.errorInput
-                        : null,
-                ]}
-                value={email}
-                editable={false}
-                placeholder="Enter your email"
-            />
+                </TouchableOpacity>
 
-            {emailError ? (
-
-                <Text style={styles.errorText}>
-                    {emailError}
-                </Text>
-
-            ) : null}
-
-            {/* Save Button */}
-            <TouchableOpacity
-                style={styles.saveBtn}
-                onPress={handleSave}
-            >
-
-                <Text style={styles.saveText}>
-                    Save Changes
-                </Text>
-
-            </TouchableOpacity>
-
-            {/* Logout */}
-            <TouchableOpacity
-                onPress={handleLogout}
-            >
-
-                <Text style={styles.logout}>
-                    Logout
-                </Text>
-
-            </TouchableOpacity>
-
-        </View>
+            </View>
+          </>
     );
 }
 
@@ -378,5 +388,23 @@ const styles = StyleSheet.create({
         color: '#DC2626',
         textAlign: 'center',
         fontWeight: '600',
+    },
+      header: {
+        backgroundColor: "#6C7CFF",
+        padding: 20,
+        paddingTop: 48,
+        paddingBottom:10,
+        // borderBottomLeftRadius: 24,
+        // borderBottomRightRadius: 24,
+        elevation: 4,
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+    },
+    back: {
+        color: "#FFFFFF",
+        fontSize: 14,
+        fontWeight: "500",
+        marginBottom: 12,
     },
 });

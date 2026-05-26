@@ -15,7 +15,7 @@ export default function DashboardLayout() {
       <Stack.Screen name="test/index" />
       <Stack.Screen name="test-result/index" />
       <Stack.Screen name="review/index" />
-      <Stack.Screen name="profile/index" />
+      <Stack.Screen name="profile/index" options={{ headerShown: false }} />
     </Stack>
   );
 }

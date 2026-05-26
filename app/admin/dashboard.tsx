@@ -59,19 +59,21 @@ export default function AdminDashboard() {
         colors={["#6a5ae0", "#5f7cf0"]}
         style={styles.header}
       >
-        <Text style={styles.appName}>Japanese Test App</Text>
-        <Text style={styles.adminText}>Admin Panel</Text>
+        <View>
+          <Text style={styles.appName}>Japanese Test App</Text>
+          <Text style={styles.adminText}>Admin Panel</Text>
+        </View>
 
-                <TouchableOpacity
-                  onPress={() => router.push("/profile")}
-                >
-                  <Image
-                    source={{
-                      uri: image ?? 'https://i.pravatar.cc/150',
-                    }}
-                    style={styles.avatar}
-                  />
-                </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => router.push("/profile")}
+        >
+          <Image
+            source={{
+              uri: image ?? 'https://i.pravatar.cc/150',
+            }}
+            style={styles.avatar}
+          />
+        </TouchableOpacity>
 
         {/* <Image
           source={{
@@ -107,11 +109,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f6fa",
   },
   header: {
-    paddingTop: 50,
+    paddingTop: 40,
     paddingHorizontal: 16,
     paddingBottom: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   appName: {
     color: "#fff",
@@ -132,9 +138,9 @@ const styles = StyleSheet.create({
     // borderRadius: 20,
     width: 45,
     height: 45,
-    borderRadius: 18,
-    left:"85%",
-    bottom:30
+    borderRadius: 50,
+    // left:"85%",
+    // bottom:30
   },
   greeting: {
     padding: 16,
