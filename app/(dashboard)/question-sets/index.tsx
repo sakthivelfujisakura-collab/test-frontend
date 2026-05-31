@@ -5,7 +5,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View, 
+  View,
 } from "react-native";
 
 type QuestionSet = {
@@ -17,15 +17,15 @@ type QuestionSet = {
 export default function QuestionSetsScreen() {
   const router = useRouter();
   const { level } = useLocalSearchParams<{ level: string }>();
-
   const [sets, setSets] = useState<QuestionSet[]>([]);
+  const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
   // ✅ FETCH SETS FROM BACKEND
   useEffect(() => {
     const fetchSets = async () => {
       try {
         const res = await fetch(
-          `http://192.168.1.48:8000/api/test/sets?level=${level}`
+          `${API_URL}/api/test/sets?level=${level}`
         );
         const data = await res.json();
 
