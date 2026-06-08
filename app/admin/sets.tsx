@@ -8,7 +8,9 @@ import {
 
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, } from "react";
+
+import { useFocusEffect } from "@react-navigation/native";
 
 // const { level } = useLocalSearchParams();
 type Test = {
@@ -22,6 +24,22 @@ export default function SetsScreen() {
   const { level } = useLocalSearchParams();
 
   const [tests, setTests] = useState<Test[]>([]);
+
+  const fetchSets = async () => {
+  try {
+    const res = await fetch(
+      `${process.env.EXPO_PUBLIC_API_URL}/api/test/sets?level=${level}`
+    );
+
+    const data = await res.json();
+
+    console.log("SETS:", data);
+
+    setTests(data);
+  } catch (err) {
+    console.log("Error fetching sets:", err);
+  }
+};
 
   const mergedSets = Array.from({ length: 10 }, (_, index) => {
   const setNumber = index + 1;
@@ -41,27 +59,21 @@ export default function SetsScreen() {
 
 console.log("MERGED SETS:", mergedSets);
 
-  useEffect(() => {
-  const fetchSets = async () => {
-    try {
-      const res = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/test/sets?level=${level}`
-      );
-
-      const data = await res.json();
-
-      console.log("SETS:", data);
-
-      setTests(data);
-    } catch (err) {
-      console.log("Error fetching sets:", err);
-    }
-  };
-
+ useEffect(() => {
   if (level) {
     fetchSets();
   }
 }, [level]);
+
+useFocusEffect(
+  useCallback(() => {
+    console.log("REFRESHING SETS SCREEN");
+
+    if (level) {
+      fetchSets();
+    }
+  }, [level])
+);
 
   console.log("LEVEL IN SETS:", level);
 

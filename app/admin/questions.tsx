@@ -137,17 +137,6 @@ export default function QuestionsScreen() {
       console.log("LEVEL SENT:", level);
       console.log("SET NUMBER SENT:", setNumber);
 
-    // NEW
-    formData.append(
-      "level",
-      String(level)
-    );
-
-    formData.append(
-      "set_number",
-      String(setNumber)
-    );
-
       const token =
         await SecureStore.getItemAsync(
           "accessToken"
@@ -179,17 +168,11 @@ export default function QuestionsScreen() {
         return;
       }
 
-      alert(
-        "Excel uploaded successfully"
-      );
+      alert("Excel uploaded successfully");
 
       setSelectedFile(null);
 
-      await fetchQuestions();
-
-      setActiveTab(
-        "manage"
-      );
+      router.back();
 
     } catch (error: any) {
 
@@ -228,6 +211,7 @@ export default function QuestionsScreen() {
   );
 
   const fetchQuestions = async () => {
+    console.log("REFRESHING QUESTIONS");
     try {
       const token = await SecureStore.getItemAsync("accessToken");
 
