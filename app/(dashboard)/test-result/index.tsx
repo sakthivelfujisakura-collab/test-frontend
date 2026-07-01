@@ -103,7 +103,7 @@ export default function TestResultScreen() {
         <View
           style={[
             styles.statusPill,
-            { backgroundColor: passed ? "#22C55E" : "#EF4444" },
+            { backgroundColor: passed ? "#22C55E" : "#FEE2E2" },
           ]}
         >
           <Text style={styles.statusPillText}>
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
   },
 
   statusPillText: {
-    color: "#fff",
+    color: "#bd1616",
     fontWeight: "800",
     fontSize: 15,
     letterSpacing: 0.5,

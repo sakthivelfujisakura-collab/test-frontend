@@ -1,19 +1,19 @@
-import { Stack, useLocalSearchParams, router } from "expo-router";
+import { getTestResult } from "@/services/api";
+import Slider from "@react-native-community/slider";
+import { Audio } from "expo-av";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
+  FlatList,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
-  ActivityIndicator,
-  FlatList,
 } from "react-native";
-import { getTestResult } from "@/services/api";
-import { Audio } from "expo-av";
 import RenderHtml from "react-native-render-html";
-import { useWindowDimensions } from "react-native";
-import Slider from "@react-native-community/slider";
 
 /* ─── per-section audio player state ─── */
 type PlayerState = {
@@ -207,7 +207,7 @@ export default function ReviewScreen() {
       <Stack.Screen
         options={{
           title: "Review Answers",
-          headerStyle: { backgroundColor: "#4D96FF" },
+          headerStyle: { backgroundColor: "#6C7CFF" },
           headerTintColor: "#fff",
         }}
       />
@@ -215,7 +215,7 @@ export default function ReviewScreen() {
       {/* 🔹 Loading */}
       {!result ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#4D96FF" />
+          <ActivityIndicator size="large" color="#6C7CFF" />
           <Text style={{ marginTop: 12, fontWeight: "600" }}>Loading Review...</Text>
         </View>
       ) : (
@@ -237,7 +237,7 @@ export default function ReviewScreen() {
                 <Text
                   style={{
                     fontWeight: '600',
-                    color: filter === f ? '#fff' : '#4D96FF',
+                    color: filter === f ? '#fff' : '#6C7CFF',
                     textAlign: 'center',
                   }}
                 >
@@ -349,9 +349,9 @@ export default function ReviewScreen() {
                               minimumValue={0}
                               maximumValue={isActiveSection && ps.duration > 0 ? ps.duration : 1}
                               value={isActiveSection ? ps.position : 0}
-                              minimumTrackTintColor="#4D96FF"
+                              minimumTrackTintColor="#6C7CFF"
                               maximumTrackTintColor="#C8DEFF"
-                              thumbTintColor="#4D96FF"
+                              thumbTintColor="#6C7CFF"
                               onSlidingComplete={async (value) => {
                                 if (isActiveSection && soundRef.current) {
                                   await soundRef.current.setPositionAsync(value);
@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
   },
 
   activeSegment: {
-    backgroundColor: '#4D96FF',
+    backgroundColor: '#6C7CFF',
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#4D96FF",
+    backgroundColor: "#6C7CFF",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 8,
@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
   playerTime: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#4D96FF",
+    color: "#6C7CFF",
     width: 42,
     textAlign: "center",
   },
@@ -541,11 +541,11 @@ const styles = StyleSheet.create({
   backBtn: {
     marginTop: 0,
     marginBottom: 36,
-    backgroundColor: '#4D96FF',
+    backgroundColor: '#6C7CFF',
     paddingVertical: 14,
     borderRadius: 14,
     alignItems: 'center',
-    shadowColor: '#4D96FF',
+    shadowColor: '#6C7CFF',
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 4,

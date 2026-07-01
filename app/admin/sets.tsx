@@ -8,7 +8,7 @@ import {
 
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState, useCallback, } from "react";
+import React, { useCallback, useEffect, useState, } from "react";
 
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -42,28 +42,44 @@ export default function SetsScreen() {
 };
 
   const mergedSets = Array.from({ length: 10 }, (_, index) => {
-  const setNumber = index + 1;
+    const setNumber = index + 1;
 
-  const existing = tests.find(
-    (t) => t.set_number === setNumber
-  );
+    const existing = tests.find(
+      (t) => t.set_number === setNumber
+    );
 
-  return (
-    existing || {
-      id: 0,
-      set_number: setNumber,
-      title: `Set ${setNumber}`,
+    return (
+      existing || {
+        id: 0,
+        set_number: setNumber,
+        title: `Set ${setNumber}`,
+      }
+    );
+  });
+
+  console.log("MERGED SETS:", mergedSets);
+
+  useEffect(() => {
+    const fetchSets = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.EXPO_PUBLIC_API_URL}/api/test/sets?level=${level}`
+        );
+
+        const data = await res.json();
+
+        console.log("SETS:", data);
+
+        setTests(data);
+      } catch (err) {
+        console.log("Error fetching sets:", err);
+      }
+    };
+
+    if (level) {
+      fetchSets();
     }
-  );
-});
-
-console.log("MERGED SETS:", mergedSets);
-
- useEffect(() => {
-  if (level) {
-    fetchSets();
-  }
-}, [level]);
+  }, [level]);
 
 useFocusEffect(
   useCallback(() => {
@@ -79,7 +95,7 @@ useFocusEffect(
 
   const renderItem = ({ item }: { item: Test }) => (
     <View style={styles.card}>
-      
+
       {/* Number Box */}
       <View style={styles.numberBox}>
         <Text style={styles.number}>{item.set_number}</Text>
@@ -92,16 +108,16 @@ useFocusEffect(
 
       {/* Button */}
       <TouchableOpacity style={styles.button}
-      onPress={() =>
-        router.push({
-          pathname: "/admin/questions",
-          params: {
-            testId: item.id,
-            setNumber: item.set_number,
-            level,
-          },
-        })
-      }>
+        onPress={() =>
+          router.push({
+            pathname: "/admin/questions",
+            params: {
+              testId: item.id,
+              setNumber: item.set_number,
+              level,
+            },
+          })
+        }>
         <Text style={styles.buttonText}>
           Manage Test {item.set_number}
         </Text>
@@ -111,17 +127,25 @@ useFocusEffect(
 
   return (
     <View style={styles.container}>
-      
+
       {/* 🔵 HEADER */}
       <LinearGradient
         colors={["#6a5ae0", "#5f7cf0"]}
         style={styles.header}
       >
-        <TouchableOpacity onPress={() => router.back()}>
+        {/* <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.back}>← Back to Home</Text>
+          <Text style={styles.headerTitle}> Manage Tests</Text>
+        </TouchableOpacity> */}
+
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{ flexDirection: "row", alignItems: "center", marginTop: 20 }}
+        >
+          <Text style={styles.back}>←</Text>
+          <Text style={styles.headerTitle}>Manage Tests</Text>
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Manage Tests</Text>
       </LinearGradient>
 
       {/* 📋 LIST */}
@@ -161,16 +185,27 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
   },
 
+  // back: {
+  //   color: "#fff",
+  //   fontSize: 14,
+  // },
+
+  // headerTitle: {
+  //   color: "#fff",
+  //   fontSize: 16,
+  //   marginTop: 8,
+  //   fontWeight: "600",
+  // },
+
   back: {
     color: "#fff",
-    fontSize: 14,
+    fontSize: 24,
+    marginRight: 10,
   },
-
   headerTitle: {
     color: "#fff",
-    fontSize: 16,
-    marginTop: 8,
-    fontWeight: "600",
+    fontSize: 20,
+    fontWeight: "bold",
   },
 
   card: {
@@ -213,24 +248,24 @@ const styles = StyleSheet.create({
   },
 
   emptyContainer: {
-  backgroundColor: "#fff",
-  padding: 24,
-  borderRadius: 12,
-  alignItems: "center",
-  marginTop: 20,
-},
+    backgroundColor: "#fff",
+    padding: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 20,
+  },
 
-emptyTitle: {
-  fontSize: 16,
-  fontWeight: "600",
-  color: "#333",
-},
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+  },
 
-emptySubtitle: {
-  fontSize: 13,
-  color: "#777",
-  marginTop: 6,
-  textAlign: "center",
-},
+  emptySubtitle: {
+    fontSize: 13,
+    color: "#777",
+    marginTop: 6,
+    textAlign: "center",
+  },
 
 });

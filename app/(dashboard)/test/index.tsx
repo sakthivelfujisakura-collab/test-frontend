@@ -1,31 +1,30 @@
-import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
+import Slider from '@react-native-community/slider';
+import { useNavigation } from '@react-navigation/native';
+import { Audio } from 'expo-av';
+import { router, useLocalSearchParams } from 'expo-router';
+import debounce from "lodash.debounce";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
+  AppState,
+  FlatList,
   Image,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  useWindowDimensions,
-  AppState,
-  FlatList,
+  useWindowDimensions
 } from 'react-native';
-import debounce from "lodash.debounce";
-import { Audio } from 'expo-av';
-import { router, useLocalSearchParams } from 'expo-router';
 import RenderHTML from 'react-native-render-html';
-import Slider from '@react-native-community/slider';
-import { useNavigation } from '@react-navigation/native';
-import axios, { AxiosError } from "axios";
 
+import { useInactivityTimer } from '@/hooks/useInactivityTimer';
 import {
   getSession,
   submitAnswer,
   submitSession,
 } from '@/services/api';
 import { Stack } from 'expo-router';
-import { useInactivityTimer } from '@/hooks/useInactivityTimer';
 
 /* ========================= CONFIG ========================= */
 
@@ -146,7 +145,7 @@ export default function TestScreen() {
   /* ========================= INACTIVITY TIMER ========================= */
 
   const { resetTimer: resetInactivityTimer } = useInactivityTimer({
-    warnAfterMs:       2 * 60 * 1000,  // warn after 2 minutes idle
+    warnAfterMs: 2 * 60 * 1000,  // warn after 2 minutes idle
     autoSubmitAfterMs: 5 * 60 * 1000,  // auto-submit after 5 minutes idle
     enabled: !submitting && !loading,
     onWarn: () => {
@@ -603,19 +602,35 @@ export default function TestScreen() {
       {/* Invisible touch catcher — resets inactivity timer on ANY tap */}
       <Stack.Screen
         options={{
-          title: 'JLPT Test',
-          headerTitleAlign: 'left',
-
-          headerStyle: {
-            backgroundColor: '#6C7CFF',
-          },
-
-          headerTitleStyle: {
-            color: '#fff',
-            fontWeight: '700',
-          },
-
-          headerTintColor: '#fff',
+          title: '',
+          headerStyle:{ backgroundColor: '#6C7CFF' },
+          headerLeft: () => (
+            // <TouchableOpacity
+            //   onPress={() => {
+            //     Alert.alert(
+            //       "Leave Test",
+            //       "Are you sure you want to leave?",
+            //       [
+            //         {
+            //           text: "Cancel",
+            //           style: "cancel",
+            //         },
+            //         {
+            //           text: "Submit",
+            //           onPress: () => handleSubmit(false),
+            //         },
+            //       ]
+            //     );
+            //   }}
+            // >
+            //   <Text style={{ color: "red", fontSize: 16 }}>← Back</Text>
+            // </TouchableOpacity>
+            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+              {/* <Text style={{ color: "#bb080e", fontSize: 16 }}>← Back</Text>/ */}
+              <Text style={styles.backIcon}>‹</Text>
+              <Text style={styles.backLabel}>Levels</Text>
+            </TouchableOpacity>
+          ),
 
           headerRight: () => loading ? null : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -623,7 +638,7 @@ export default function TestScreen() {
                 <Text
                   style={{
                     fontSize: 10,
-                    color: '#E0E0FF',
+                    color: '#000000',
                     letterSpacing: 1,
                   }}
                 >
@@ -633,7 +648,7 @@ export default function TestScreen() {
                   style={{
                     fontSize: 16,
                     fontWeight: '800',
-                    color: remaining <= 60 ? '#FF3B30' : '#fff',
+                    color: remaining <= 60 ? '#FF3B30' : '#000000',
                   }}
                 >
                   {formatTime(remaining)}
@@ -1104,5 +1119,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
+    backIcon: {
+    fontSize: 28,
+    color: "#ffffff",
+    lineHeight: 32,
+    fontWeight: "300",
+  },
 
+  backLabel: {
+    fontSize: 19,
+    color: "#ffffff",
+    fontWeight: "600",
+  },
+    backButton: {
+      // position: "absolute",
+      // left: 0,
+      // top: Platform.OS === "android"
+      //   ? (StatusBar.currentHeight ?? 24) + 10
+      //   : 52,
+      // top:-20,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 2,
+    },
 });
