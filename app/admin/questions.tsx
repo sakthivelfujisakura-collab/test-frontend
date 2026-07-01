@@ -5,7 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useCallback, useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import AudioPlayer from "../../components/audioplayer";
 
 export default function QuestionsScreen() {
@@ -137,24 +137,24 @@ export default function QuestionsScreen() {
       console.log("LEVEL SENT:", level);
       console.log("SET NUMBER SENT:", setNumber);
 
-    // NEW
-    formData.append(
-      "level",
-      String(level)
-    );
+      // NEW
+      formData.append(
+        "level",
+        String(level)
+      );
 
-    formData.append(
-      "set_number",
-      String(setNumber)
-    );
+      formData.append(
+        "set_number",
+        String(setNumber)
+      );
 
       const token =
         await SecureStore.getItemAsync(
           "accessToken"
         );
 
-        console.log("LEVEL:", level);
-        console.log("TEST ID:", testId);
+      console.log("LEVEL:", level);
+      console.log("TEST ID:", testId);
 
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/excel/upload`,
@@ -179,17 +179,11 @@ export default function QuestionsScreen() {
         return;
       }
 
-      alert(
-        "Excel uploaded successfully"
-      );
+      alert("Excel uploaded successfully");
 
       setSelectedFile(null);
 
-      await fetchQuestions();
-
-      setActiveTab(
-        "manage"
-      );
+      router.back();
 
     } catch (error: any) {
 
@@ -204,6 +198,7 @@ export default function QuestionsScreen() {
   };
 
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
 
   const [manualForm, setManualForm] = useState({
     section: "",
@@ -228,7 +223,9 @@ export default function QuestionsScreen() {
   );
 
   const fetchQuestions = async () => {
+    console.log("REFRESHING QUESTIONS");
     try {
+      setLoadingQuestions(true);
       const token = await SecureStore.getItemAsync("accessToken");
 
       const res = await fetch(
@@ -241,9 +238,6 @@ export default function QuestionsScreen() {
       );
 
       const data = await res.json();
-      console.log("LEVEL:", level);
-      console.log("TEST ID FROM PARAM:", testId);
-      console.log("API RESPONSE:", data);
       if (Array.isArray(data)) {
         setQuestions(data);
       } else {
@@ -251,6 +245,8 @@ export default function QuestionsScreen() {
       }
     } catch (err) {
       console.log("Fetch error:", err);
+    } finally {
+      setLoadingQuestions(false);
     }
   };
 
@@ -329,12 +325,13 @@ export default function QuestionsScreen() {
         colors={["#6a5ae0", "#5f7cf0"]}
         style={styles.header}
       >
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.back}>← Back</Text>
-        </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.back()}
+          style={{ flexDirection: "row", alignItems: "center", marginTop: 30 }}>
+          <Text style={styles.back}>←</Text>
 
-        <Text style={styles.title}>Admin Panel</Text>
-        <Text style={styles.subtitle}>Test Management System</Text>
+          <Text style={styles.headerTitle}>Sets List</Text>
+          {/* <Text style={styles.subtitle}>Sets List</Text> */}
+        </TouchableOpacity>
       </LinearGradient>
 
       {/* TABS */}
@@ -625,196 +622,201 @@ export default function QuestionsScreen() {
 
           </View>
         )}
-        
+
         {/* MANAGE TAB */}
         {activeTab === "manage" && (
           <View>
-            {questions.length === 0 ? (
-              <View style={styles.emptyBox}>
-                <Text style={styles.emptyText}>
-                  No questions available for this test.
-                </Text>
-                <Text style={styles.emptySub}>
-                  Use Manual Entry or Excel Import to add questions.
-                </Text>
+            {loadingQuestions ? (
+              <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#007AFF" />
+                <Text style={styles.loaderText}>Loading questions...</Text>
               </View>
-            ) : (
-              Object.entries(groupQuestions(questions))
-                .sort(
-                  ([a], [b]) =>
-                    sectionOrder.indexOf(a) -
-                    sectionOrder.indexOf(b)
-                ).map(
-                  ([section, mondaiGroup]: any) => (
-                    <View key={section} style={{ marginBottom: 20 }}>
+            ) : questions.length === 0 ? (
+                <View style={styles.emptyBox}>
+                  <Text style={styles.emptyText}>
+                    No questions available for this test.
+                  </Text>
+                  <Text style={styles.emptySub}>
+                    Use Manual Entry or Excel Import to add questions.
+                  </Text>
+                </View>
+              ) : (
+                Object.entries(groupQuestions(questions))
+                  .sort(
+                    ([a], [b]) =>
+                      sectionOrder.indexOf(a) -
+                      sectionOrder.indexOf(b)
+                  ).map(
+                    ([section, mondaiGroup]: any) => (
+                      <View key={section} style={{ marginBottom: 20 }}>
 
-                      {/* SECTION */}
-                      <Text style={styles.sectionHeader}>
-                        {section.toUpperCase()}
-                      </Text>
+                        {/* SECTION */}
+                        <Text style={styles.sectionHeader}>
+                          {section.toUpperCase()}
+                        </Text>
 
-                      {section === "Listening" &&
-                        (Object.values(mondaiGroup)[0] as any)?.audio_url ? (
-                        <View style={styles.audioContainer}>
+                        {section === "Listening" &&
+                          (Object.values(mondaiGroup)[0] as any)?.audio_url ? (
+                          <View style={styles.audioContainer}>
 
-                          <AudioPlayer
-                            uri={(Object.values(mondaiGroup)[0] as any)?.audio_url}
-                          />
+                            <AudioPlayer
+                              uri={(Object.values(mondaiGroup)[0] as any)?.audio_url}
+                            />
 
-                          <Text style={styles.urlText}>
-                            {(Object.values(mondaiGroup)[0] as any)?.audio_url}
-                          </Text>
-
-                          <TouchableOpacity
-                            onPress={() =>
-                              router.push({
-                                pathname: "/admin/edit-audio",
-                                params: {
-                                  section_id:
-                                    (Object.values(mondaiGroup)[0] as any)?.section_id,
-                                  audio_url:
-                                    (Object.values(mondaiGroup)[0] as any)?.audio_url,
-                                },
-                              })
-                            }
-                          >
-                            <Text style={styles.editInstruction}>
-                              ✏️ Edit Audio URL
+                            <Text style={styles.urlText}>
+                              {(Object.values(mondaiGroup)[0] as any)?.audio_url}
                             </Text>
-                          </TouchableOpacity>
 
-                        </View>
-                      ) : null}
-
-                      {Object.entries(mondaiGroup).map(
-                        ([mondai, data]: any) => (
-                          <View key={mondai}>
-                            <View style={styles.mondaiRow}>
-                              <Text style={styles.mondai}>
-                                {mondai}
+                            <TouchableOpacity
+                              onPress={() =>
+                                router.push({
+                                  pathname: "/admin/edit-audio",
+                                  params: {
+                                    section_id:
+                                      (Object.values(mondaiGroup)[0] as any)?.section_id,
+                                    audio_url:
+                                      (Object.values(mondaiGroup)[0] as any)?.audio_url,
+                                  },
+                                })
+                              }
+                            >
+                              <Text style={styles.editInstruction}>
+                                ✏️ Edit Audio URL
                               </Text>
+                            </TouchableOpacity>
 
-                              <TouchableOpacity
-                                onPress={() =>
-                                  router.push({
-                                    pathname: "/admin/edit-instruction",
-                                    params: {
-                                      group_id: data.group_id,
-                                      instruction: data.instruction,
-                                    },
-                                  })
-                                }
-                              >
-                                <Text style={styles.editInstruction}>
-                                  ✏️ Edit
-                                </Text>
-                              </TouchableOpacity>
-                            </View>
-                            <Text style={styles.instruction}>
-                              {data.instruction}
-                            </Text>
+                          </View>
+                        ) : null}
 
-                            {data.passage_text &&
-                              data.passage_text.trim() !== "" ? (
-                              <View style={styles.passageContainer}>
-
-                                <Text style={styles.passage}>
-                                  {data.passage_text}
+                        {Object.entries(mondaiGroup).map(
+                          ([mondai, data]: any) => (
+                            <View key={mondai}>
+                              <View style={styles.mondaiRow}>
+                                <Text style={styles.mondai}>
+                                  {mondai}
                                 </Text>
 
                                 <TouchableOpacity
                                   onPress={() =>
                                     router.push({
-                                      pathname: "/admin/edit-passage",
+                                      pathname: "/admin/edit-instruction",
                                       params: {
                                         group_id: data.group_id,
-                                        passage_text: data.passage_text,
+                                        instruction: data.instruction,
                                       },
                                     })
                                   }
                                 >
                                   <Text style={styles.editInstruction}>
-                                    ✏️ Edit Passage
+                                    ✏️ Edit
                                   </Text>
                                 </TouchableOpacity>
-
                               </View>
-                            ) : null}
+                              <Text style={styles.instruction}>
+                                {data.instruction}
+                              </Text>
 
-                            {data.questions.map((q: any) => (
-                              <View key={q.id} style={styles.qCard}>
+                              {data.passage_text &&
+                                data.passage_text.trim() !== "" ? (
+                                <View style={styles.passageContainer}>
 
-                                <Text style={styles.qText}>
-                                  {q.question}
-                                </Text>
+                                  <Text style={styles.passage}>
+                                    {data.passage_text}
+                                  </Text>
 
-                                {q.image_url ? (
-                                  <View style={styles.imageContainer}>
-
-                                    <Image
-                                      source={{ uri: q.image_url }}
-                                      style={styles.questionImage}
-                                      resizeMode="contain"
-                                    />
-
-                                    <Text style={styles.urlText}>
-                                      {q.image_url}
+                                  <TouchableOpacity
+                                    onPress={() =>
+                                      router.push({
+                                        pathname: "/admin/edit-passage",
+                                        params: {
+                                          group_id: data.group_id,
+                                          passage_text: data.passage_text,
+                                        },
+                                      })
+                                    }
+                                  >
+                                    <Text style={styles.editInstruction}>
+                                      ✏️ Edit Passage
                                     </Text>
+                                  </TouchableOpacity>
 
-                                    <TouchableOpacity
-                                      onPress={() =>
-                                        router.push({
-                                          pathname: "/admin/edit-image",
-                                          params: {
-                                            question_id: q.id,
-                                            image_url: q.image_url,
-                                          },
-                                        })
-                                      }
-                                    >
-                                      <Text style={styles.editInstruction}>
-                                        ✏️ Edit Image URL
+                                </View>
+                              ) : null}
+
+                              {data.questions.map((q: any) => (
+                                <View key={q.id} style={styles.qCard}>
+
+                                  <Text style={styles.qText}>
+                                    {q.question}
+                                  </Text>
+
+                                  {q.image_url ? (
+                                    <View style={styles.imageContainer}>
+
+                                      <Image
+                                        source={{ uri: q.image_url }}
+                                        style={styles.questionImage}
+                                        resizeMode="contain"
+                                      />
+
+                                      <Text style={styles.urlText}>
+                                        {q.image_url}
                                       </Text>
+
+                                      <TouchableOpacity
+                                        onPress={() =>
+                                          router.push({
+                                            pathname: "/admin/edit-image",
+                                            params: {
+                                              question_id: q.id,
+                                              image_url: q.image_url,
+                                            },
+                                          })
+                                        }
+                                      >
+                                        <Text style={styles.editInstruction}>
+                                          ✏️ Edit Image URL
+                                        </Text>
+                                      </TouchableOpacity>
+
+                                    </View>
+                                  ) : null}
+
+                                  {q.options?.map((opt: string, i: number) => (
+                                    <Text key={i} style={styles.option}>
+                                      {opt}
+                                    </Text>
+                                  ))}
+
+                                  <Text style={styles.answer}>
+                                    Answer: {q.options?.[q.correct_option - 1] || "N/A"}
+                                  </Text>
+
+                                  <View style={styles.actions}>
+                                    <TouchableOpacity
+                                      style={styles.editBtn}
+                                      onPress={() => handleEdit(q)}
+                                    >
+                                      <Text style={styles.btnText}>Edit</Text>
                                     </TouchableOpacity>
 
+                                    <TouchableOpacity
+                                      style={styles.deleteBtn}
+                                      onPress={() => handleDelete(q.id)}
+                                    >
+                                      <Text style={styles.btnText}>Delete</Text>
+                                    </TouchableOpacity>
                                   </View>
-                                ) : null}
 
-                                {q.options?.map((opt: string, i: number) => (
-                                  <Text key={i} style={styles.option}>
-                                    {opt}
-                                  </Text>
-                                ))}
-
-                                <Text style={styles.answer}>
-                                  Answer: {q.options?.[q.correct_option - 1] || "N/A"}
-                                </Text>
-
-                                <View style={styles.actions}>
-                                  <TouchableOpacity
-                                    style={styles.editBtn}
-                                    onPress={() => handleEdit(q)}
-                                  >
-                                    <Text style={styles.btnText}>Edit</Text>
-                                  </TouchableOpacity>
-
-                                  <TouchableOpacity
-                                    style={styles.deleteBtn}
-                                    onPress={() => handleDelete(q.id)}
-                                  >
-                                    <Text style={styles.btnText}>Delete</Text>
-                                  </TouchableOpacity>
                                 </View>
-
-                              </View>
-                            ))}
-                          </View>
-                        )
-                      )}
-                    </View>
+                              ))}
+                            </View>
+                          )
+                        )}
+                      </View>
+                    )
                   )
-                )
-            )}
+              )}
           </View>
         )}
 
@@ -839,14 +841,14 @@ const styles = StyleSheet.create({
 
   back: {
     color: "#fff",
+    fontSize: 24,
+    marginRight: 10,
   },
-
-  title: {
+  headerTitle: {
     color: "#fff",
-    fontWeight: "600",
-    marginTop: 8,
+    fontSize: 20,
+    fontWeight: "bold",
   },
-
   subtitle: {
     color: "#ddd",
     fontSize: 12,
@@ -855,10 +857,23 @@ const styles = StyleSheet.create({
   tabs: {
     flexDirection: "row",
     justifyContent: "space-around",
+    alignItems: "center",
     margin: 16,
     backgroundColor: "#eee",
     borderRadius: 20,
     padding: 6,
+  },
+
+  loaderContainer: {
+    paddingVertical: 50,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  loaderText: {
+    marginTop: 10,
+    color: "#666",
+    fontSize: 14,
   },
 
   tab: {
